@@ -1,0 +1,62 @@
+def maxPpl(p, x, y, r):
+    events = {}
+    n = len(p)
+    m = len(y)
+    
+    # Process towns
+    for i in range(n):
+        if x[i] in events:
+            events[x[i]].append((2, p[i]))
+        else:
+            events[x[i]] = [(2, p[i])]
+    
+    # Process clouds
+    for i in range(m):
+        if y[i] - r[i] in events:
+            events[y[i] - r[i]].append((1, i + 1))
+        else:
+            events[y[i] - r[i]] = [(1, i + 1)]
+        
+        if y[i] + r[i] + 1 in events:
+            events[y[i] + r[i] + 1].append((-1, i + 1))
+        else:
+            events[y[i] + r[i] + 1] = [(-1, i + 1)]
+    
+    notUnd = 0  # not_under_attack
+    active = set()
+    bomberPop = [0] * (m + 1)
+    
+    # Process events in sorted order
+    for cord in sorted(events.keys()):
+        v = events[cord]
+        v.sort()
+        
+        for event in v:
+            if event[0] == -1:
+                active.discard(event[1])
+            elif event[0] == 1:
+                active.add(event[1])
+            else:  # event[0] == 2
+                if len(active) == 1:
+                    bomberPop[list(active)[0]] += event[1]
+                elif len(active) == 0:
+                    notUnd += event[1]
+    
+    mx = max(bomberPop)
+    return notUnd + mx
+
+if __name__ == '__main__':
+    import sys
+    input = sys.stdin.read
+    data = input().split()
+    
+    n = int(data[0])
+    p = list(map(int, data[1:n+1]))
+    x = list(map(int, data[n+1:2*n+1]))
+    
+    m = int(data[2*n+1])
+    y = list(map(int, data[2*n+2:2*n+2+m]))
+    r = list(map(int, data[2*n+2+m:]))
+    
+    result = maxPpl(p, x, y, r)
+    print(result)
